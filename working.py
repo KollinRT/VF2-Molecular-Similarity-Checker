@@ -2,6 +2,8 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 from util import timer
 import time
+import csv
+
 
 class VF2Matcher:
     def __init__(self, G1, G2):
@@ -10,14 +12,17 @@ class VF2Matcher:
         self.core_1 = {}  # Mapping from G1 to G2
         self.core_2 = {}  # Mapping from G2 to G1
         self.largest_match = {}  # Store the largest match found
+        # self.name1 = name1  # Name for the first molecule
+        # self.name2 = name2  # Name for the second molecule
 
     def is_match(self):
         # start timing
         tic = time.perf_counter()  # Start timing
         self.match()  # Perform the matching process; no need to get result...
         toc = time.perf_counter()  # End timing
-        print(f"Total matching time: {toc - tic:0.4f} seconds")  # Print total time
-        return len(self.largest_match) > 0
+        elapsed_time = toc - tic
+        print(f"Total matching time: {elapsed_time:0.4f} seconds") # Print total time
+        return len(self.largest_match) > 0, elapsed_time
 
     def match(self, n=None):
         # Check and update the largest match found so far
@@ -51,9 +56,20 @@ class VF2Matcher:
                 del self.core_2[m]
         return False
 
+# TODO: experimenting with other semantic feasibility
     def semantic_feasibility(self, n, m):
-        # Simplified check: only consider node count match for demonstration
-        return len(self.G1[n]['neighbors']) == len(self.G2[m]['neighbors'])  # TODO: DO we need the same neighbors here? I think yeah but the neighbors do not need to be the same numbers just the same amount....
+        # Check if the number of neighbors is the same
+        if len(self.G1[n]['neighbors']) != len(self.G2[m]['neighbors']):
+            return False
+
+        # Check if the atoms are of the same type
+        if self.G1[n]['atom'] != self.G2[m]['atom']:
+            return False
+
+        # If additional checks are needed, like checking bond types or other specific conditions such as isotopes or stereochemistry, add them here
+
+        # If all checks pass, the nodes are semantically feasible
+        return True
 
     def print_largest_match(self):
         # Gather matched atoms and their symbols
@@ -95,16 +111,85 @@ def print_matched_subgraph(matcher):
 
 # TODO: add the graph imaging portion
 
-def benchmark_molecules(G1, G2, G3, G4):
+# def benchmark_molecules(G1, G2, G3, G4):
+#     """
+#     Benchmark molecule by adding 1 atom from G3 to G1 and one additional one to G4.
+#     Benchmark two molcules +0/+0, +1/+0, +1/+1.
+#     :param G1:
+#     :param G2:
+#     :param G3:
+#     :param G4:
+#     :return:
+#     """
+# def benchmark_molecules(molecule_pairs, output_csv="benchmark_results.csv", output_latex="benchmark_results.tex"):
+#     """
+#     Benchmark multiple pairs of molecule graphs and output the results to a CSV file and a LaTeX table.
+#     :param molecule_pairs: List of tuples (G1, name1, G2, name2) representing pairs of molecule graphs to compare and their strings of names.
+#     :param output_csv: Filename for the CSV output.
+#     :param output_latex: Filename for the LaTeX output.
+#     :return: None
+#     """
+#     benchmark_results = [("Molecule 1 Size", "Molecule 2 Size", "Match Size", "Execution Time (s)")]
+#
+#     for (G1, name1, G2, name2) in molecule_pairs:
+#         matcher = VF2Matcher(G1, G2)
+#         _, elapsed_time = matcher.is_match()
+#         match_size = len(matcher.largest_match)
+#         benchmark_results.append((len(G1), len(G2), match_size, f"{elapsed_time:0.4f}"))
+#
+#
+#     # Output results to CSV
+#     with open(output_csv, mode='w', newline='') as csv_file:
+#         writer = csv.writer(csv_file)
+#         writer.writerows(benchmark_results)
+#
+#     # Output results to a LaTeX table format
+#     with open(output_latex, mode='w') as latex_file:
+#         latex_file.write("\\begin{tabular}{cccc}\n")
+#         latex_file.write("\\hline\n")
+#         latex_file.write("Molecule 1 Size & Molecule 2 Size & Match Size & Execution Time (s) \\\\\n")
+#         latex_file.write("\\hline\n")
+#         for row in benchmark_results[1:]:  # Skip the header
+#             latex_file.write(f"{row[0]} & {row[1]} & {row[2]} & {row[3]} \\\\\n")
+#         latex_file.write("\\hline\n")
+#         latex_file.write("\\end{tabular}")
+
+def benchmark_molecules(molecule_pairs, output_csv="benchmark_results.csv", output_latex="benchmark_results.tex"):
     """
-    Benchmark molecule by adding 1 atom from G3 to G1 and one additional one to G4.
-    Benchmark two molcules +0/+0, +1/+0, +1/+1.
-    :param G1:
-    :param G2:
-    :param G3:
-    :param G4:
-    :return:
+    Benchmark multiple pairs of molecule graphs and output the results to a CSV file and a LaTeX table.
+    Formats molecule names with their sizes in parentheses.
+    :param molecule_pairs: List of tuples (G1, name1, G2, name2) representing pairs of molecule graphs to compare and their strings of names.
+    :param output_csv: Filename for the CSV output.
+    :param output_latex: Filename for the LaTeX output.
+    :return: None
     """
+    benchmark_results = [("Molecule 1 (Size)", "Molecule 2 (Size)", "Match Size", "Execution Time (s)")]
+
+    for (G1, name1, G2, name2) in molecule_pairs:
+        matcher = VF2Matcher(G1, G2)
+        _, elapsed_time = matcher.is_match()
+        match_size = len(matcher.largest_match)
+        molecule_1_info = f"{name1} ({len(G1)})"
+        molecule_2_info = f"{name2} ({len(G2)})"
+        benchmark_results.append((molecule_1_info, molecule_2_info, match_size, f"{elapsed_time:0.4f}"))
+        if len(G1) > len(G2):
+            drawCommonMolecule()
+
+    # Output results to CSV
+    with open(output_csv, mode='w', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerows(benchmark_results)
+
+    # Output results to a LaTeX table format
+    with open(output_latex, mode='w') as latex_file:
+        latex_file.write("\\begin{tabular}{cccc}\n")
+        latex_file.write("\\hline\n")
+        latex_file.write("Molecule 1 (Size) & Molecule 2 (Size) & Match Size & Execution Time (s) \\\\\n")
+        latex_file.write("\\hline\n")
+        for row in benchmark_results[1:]:  # Skip the header
+            latex_file.write(f"{row[0]} & {row[1]} & {row[2]} & {row[3]} \\\\\n")
+        latex_file.write("\\hline\n")
+        latex_file.write("\\end{tabular}")
 
 def highlight_match_in_molecule(molecule, match_indices):
     from rdkit.Chem.Draw import MolsToGridImage
@@ -132,7 +217,7 @@ def highlight_match_in_molecule(molecule, match_indices):
 #     svg = drawer.GetDrawingText().replace('svg:', '')
 #     display(SVG(svg))
 
-def drawCommonMolecule(matcher, molecule):
+def drawCommonMolecule(matcher, molecule, molecule_name):
     from rdkit import Chem
     from rdkit.Chem import Draw
 
@@ -143,7 +228,7 @@ def drawCommonMolecule(matcher, molecule):
     print(matcher.largest_match)
     print("Matching atoms:", matched_atoms)
     # Choose one of the two molecules for the overlay
-    Draw.MolToFile(molecule, f'{molecule}_common.png', highlightAtoms=matched_atoms, size=(300, 300))
+    Draw.MolToFile(molecule, f'{molecule_name}.png', highlightAtoms=matched_atoms, size=(300, 300))
 
 
 ethanol = Chem.MolFromSmiles("CCO")
@@ -155,7 +240,8 @@ methanol_graph = molecule_to_graph(methanol)
 matcher = VF2Matcher(ethanol_graph, methanol_graph)
 
 # TODO: Maybe refactor to choose the larger of the two molecules and grab that name for the file?
-drawCommonMolecule(matcher, ethanol)
+drawCommonMolecule(matcher, ethanol, "ethanol")
+drawCommonMolecule(matcher, methanol, "methanol")
 
 # def check_chirality(self, n, m):
 #     # Assuming 'chirality' is a property stored in the node attributes
@@ -203,5 +289,26 @@ matched_atoms_ibuprofen_naproxen = list(matcher.largest_match.keys())
 
 # Highlight these atoms in the ethanol molecule
 img = Draw.MolToImage(ibuprofen, highlightAtoms=matched_atoms_ibuprofen_naproxen, size=(300, 300))
-drawCommonMolecule(matcher, ibuprofen)
-drawCommonMolecule(matcher, naproxen)
+drawCommonMolecule(matcher, ibuprofen, "ibuprofen")
+drawCommonMolecule(matcher, naproxen, "naproxen")
+
+benzene = Chem.MolFromSmiles("C1=CC=CC=C1")
+benzene_graph = molecule_to_graph(benzene)
+napthalene = Chem.MolFromSmiles("C1=CC=C2C=CC=CC2=C1")
+napthalene_graph = molecule_to_graph(napthalene)
+
+indole = Chem.MolFromSmiles("C1=CC=C2C(=C1)C=CN2")
+indole_graph = molecule_to_graph(indole)
+tryptophan = Chem.MolFromSmiles("C1=CC=C2C(=C1)C(=CN2)CC(C(=O)O)N")
+tryptophan_graph = molecule_to_graph(tryptophan)
+
+acetic_acid = Chem.MolFromSmiles("CC(=O)O")
+acetic_acid_graph = molecule_to_graph(acetic_acid)
+stearic_acid = Chem.MolFromSmiles("CCCCCCCCCCCCCCCCCC(=O)O")
+stearic_acid_graph = molecule_to_graph(stearic_acid)
+
+# (benzene_graph, "benzene", napthalene_graph, "napthalene"), (indole_graph, "indole", tryptophan_graph, "tryptophan"), (acetic_acid_graph, "acetic_acid", tryptophan_graph, "tryptophan")
+
+
+molecule_pairs=[(methanol_graph, "methanol", ethanol_graph, "ethanol"), (ibuprofen_graph, "ibuprofen", naproxen_graph, "naproxen"), (benzene_graph, "benzene", napthalene_graph, "napthalene"), (indole_graph, "indole", tryptophan_graph, "tryptophan"), (acetic_acid_graph, "acetic_acid", tryptophan_graph, "tryptophan")]
+benchmark_molecules(molecule_pairs)
