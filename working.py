@@ -364,5 +364,5 @@ stearic_acid_graph = molecule_to_graph(stearic_acid)
 # (benzene_graph, "benzene", napthalene_graph, "napthalene"), (indole_graph, "indole", tryptophan_graph, "tryptophan"), (acetic_acid_graph, "acetic_acid", tryptophan_graph, "tryptophan")
 
 
-molecule_pairs=[(methanol, "methanol", ethanol, ethanol_graph, "ethanol"), (ibuprofen, ibuprofen_graph, "ibuprofen", naproxen,naproxen_graph, "naproxen"), (benzene, benzene_graph, "benzene", napthalene, napthalene_graph, "napthalene"), (indole, indole_graph, "indole", tryptophan, tryptophan_graph, "tryptophan"), (acetic_acid, acetic_acid_graph, "acetic_acid", stearic_acid, stearic_acid_graph, "stearic_acid")]
+molecule_pairs = [(methanol, methanol_graph, "methanol", ethanol, ethanol_graph, "ethanol"), (ibuprofen, ibuprofen_graph, "ibuprofen", naproxen,naproxen_graph, "naproxen"), (benzene, benzene_graph, "benzene", napthalene, napthalene_graph, "napthalene"), (indole, indole_graph, "indole", tryptophan, tryptophan_graph, "tryptophan"), (acetic_acid, acetic_acid_graph, "acetic_acid", stearic_acid, stearic_acid_graph, "stearic_acid")]
 benchmark_molecules(molecule_pairs)
