@@ -154,26 +154,80 @@ def print_matched_subgraph(matcher):
 #         latex_file.write("\\hline\n")
 #         latex_file.write("\\end{tabular}")
 
+# def benchmark_molecules(molecule_pairs, output_csv="benchmark_results.csv", output_latex="benchmark_results.tex"):
+#     """
+#     Benchmark multiple pairs of molecule graphs and output the results to a CSV file and a LaTeX table.
+#     Formats molecule names with their sizes in parentheses.
+#     :param molecule_pairs: List of tuples (G1, name1, G2, name2) representing pairs of molecule graphs to compare and their strings of names.
+#     :param output_csv: Filename for the CSV output.
+#     :param output_latex: Filename for the LaTeX output.
+#     :return: None
+#     """
+#     benchmark_results = [("Molecule 1 (Size)", "Molecule 2 (Size)", "Match Size", "Execution Time (s)")]
+#
+#     for (mol1, G1, name1, mol2, G2, name2) in molecule_pairs:
+#         matcher = VF2Matcher(G1, G2)
+#         _, elapsed_time = matcher.is_match()
+#         match_size = len(matcher.largest_match)
+#         molecule_1_info = f"{name1} ({len(G1)})"
+#         molecule_2_info = f"{name2} ({len(G2)})"
+#         benchmark_results.append((molecule_1_info, molecule_2_info, match_size, f"{elapsed_time:0.4f}"))
+#
+#     # Output results to CSV
+#     with open(output_csv, mode='w', newline='') as csv_file:
+#         writer = csv.writer(csv_file)
+#         writer.writerows(benchmark_results)
+#
+#     # Output results to a LaTeX table format
+#     with open(output_latex, mode='w') as latex_file:
+#         latex_file.write("\\begin{tabular}{cccc}\n")
+#         latex_file.write("\\hline\n")
+#         latex_file.write("Molecule 1 (Size) & Molecule 2 (Size) & Match Size & Execution Time (s) \\\\\n")
+#         latex_file.write("\\hline\n")
+#         for row in benchmark_results[1:]:  # Skip the header
+#             latex_file.write(f"{row[0]} & {row[1]} & {row[2]} & {row[3]} \\\\\n")
+#         latex_file.write("\\hline\n")
+#         latex_file.write("\\end{tabular}")
+
+from rdkit import Chem
+from rdkit.Chem import Draw
+
+def drawCommonSubgraphOnLargerMolecule(matcher, mol1, mol2, molecule_name_prefix):
+    # Determine the larger molecule based on the number of atoms
+    if len(mol1.GetAtoms()) >= len(mol2.GetAtoms()):
+        larger_molecule = mol1
+        matched_atoms = [mol1.GetAtomWithIdx(i).GetIdx() for i in matcher.largest_match.keys()]
+    else:
+        larger_molecule = mol2
+        # Map matched atoms in G1 to their counterparts in G2 for highlighting
+        matched_atoms_in_g2 = [matcher.largest_match[i] for i in matcher.largest_match.keys()]
+        matched_atoms = [mol2.GetAtomWithIdx(i).GetIdx() for i in matched_atoms_in_g2]
+
+    molecule_name = f"{molecule_name_prefix}_highlighted.png"
+    Draw.MolToFile(larger_molecule, molecule_name, highlightAtoms=matched_atoms, size=(300, 300))
+
 def benchmark_molecules(molecule_pairs, output_csv="benchmark_results.csv", output_latex="benchmark_results.tex"):
     """
     Benchmark multiple pairs of molecule graphs and output the results to a CSV file and a LaTeX table.
-    Formats molecule names with their sizes in parentheses.
-    :param molecule_pairs: List of tuples (G1, name1, G2, name2) representing pairs of molecule graphs to compare and their strings of names.
+    Formats molecule names with their sizes in parentheses. Additionally, draws the common subgraph on the larger molecule for each pair.
+    :param molecule_pairs: List of tuples (mol1, G1, name1, mol2, G2, name2) representing RDKit Mol objects and corresponding molecule graphs to compare, along with their names.
     :param output_csv: Filename for the CSV output.
     :param output_latex: Filename for the LaTeX output.
     :return: None
     """
     benchmark_results = [("Molecule 1 (Size)", "Molecule 2 (Size)", "Match Size", "Execution Time (s)")]
 
-    for (G1, name1, G2, name2) in molecule_pairs:
+    for (mol1, G1, name1, mol2, G2, name2) in molecule_pairs:
         matcher = VF2Matcher(G1, G2)
         _, elapsed_time = matcher.is_match()
         match_size = len(matcher.largest_match)
         molecule_1_info = f"{name1} ({len(G1)})"
         molecule_2_info = f"{name2} ({len(G2)})"
         benchmark_results.append((molecule_1_info, molecule_2_info, match_size, f"{elapsed_time:0.4f}"))
-        if len(G1) > len(G2):
-            drawCommonMolecule()
+
+        # Draw the common subgraph on the larger molecule
+        image_name_prefix = f"{name1}_vs_{name2}"
+        drawCommonSubgraphOnLargerMolecule(matcher, mol1, mol2, image_name_prefix)
 
     # Output results to CSV
     with open(output_csv, mode='w', newline='') as csv_file:
@@ -310,5 +364,5 @@ stearic_acid_graph = molecule_to_graph(stearic_acid)
 # (benzene_graph, "benzene", napthalene_graph, "napthalene"), (indole_graph, "indole", tryptophan_graph, "tryptophan"), (acetic_acid_graph, "acetic_acid", tryptophan_graph, "tryptophan")
 
 
-molecule_pairs=[(methanol_graph, "methanol", ethanol_graph, "ethanol"), (ibuprofen_graph, "ibuprofen", naproxen_graph, "naproxen"), (benzene_graph, "benzene", napthalene_graph, "napthalene"), (indole_graph, "indole", tryptophan_graph, "tryptophan"), (acetic_acid_graph, "acetic_acid", tryptophan_graph, "tryptophan")]
+molecule_pairs=[(methanol, "methanol", ethanol, ethanol_graph, "ethanol"), (ibuprofen, ibuprofen_graph, "ibuprofen", naproxen,naproxen_graph, "naproxen"), (benzene, benzene_graph, "benzene", napthalene, napthalene_graph, "napthalene"), (indole, indole_graph, "indole", tryptophan, tryptophan_graph, "tryptophan"), (acetic_acid, acetic_acid_graph, "acetic_acid", stearic_acid, stearic_acid_graph, "stearic_acid")]
 benchmark_molecules(molecule_pairs)
