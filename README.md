@@ -10,7 +10,7 @@ Primary motivation is due to a medicinal chemistry course that was taken and und
 ## Background on Algorithm
 The VF2 algorithm comes from the paper "An Improved Algorithm for Matching Large Graphs" written by L. P. Cordella, P. Foggia, C. Sansone, and M. Vento. The idea behind the algorithm is shown in the following figure taken from the paper.
 
-![VF2Algo](C:\Users\kolli\Desktop\VF2Algo\VF2-Molecular-Similarity-Checker\images\VF2Algo.png)
+![VF2Algo](./images/VF2Algo.png)
 
 Which shows us that this Match algorithm scans for common matches and grows the subgraph and if not include then includes backtracking  to help determine the best most connected graph.
 
