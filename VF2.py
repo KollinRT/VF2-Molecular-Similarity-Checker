@@ -111,84 +111,6 @@ def print_matched_subgraph(matcher):
 
 # TODO: add the graph imaging portion
 
-# def benchmark_molecules(G1, G2, G3, G4):
-#     """
-#     Benchmark molecule by adding 1 atom from G3 to G1 and one additional one to G4.
-#     Benchmark two molcules +0/+0, +1/+0, +1/+1.
-#     :param G1:
-#     :param G2:
-#     :param G3:
-#     :param G4:
-#     :return:
-#     """
-# def benchmark_molecules(molecule_pairs, output_csv="benchmark_results.csv", output_latex="benchmark_results.tex"):
-#     """
-#     Benchmark multiple pairs of molecule graphs and output the results to a CSV file and a LaTeX table.
-#     :param molecule_pairs: List of tuples (G1, name1, G2, name2) representing pairs of molecule graphs to compare and their strings of names.
-#     :param output_csv: Filename for the CSV output.
-#     :param output_latex: Filename for the LaTeX output.
-#     :return: None
-#     """
-#     benchmark_results = [("Molecule 1 Size", "Molecule 2 Size", "Match Size", "Execution Time (s)")]
-#
-#     for (G1, name1, G2, name2) in molecule_pairs:
-#         matcher = VF2Matcher(G1, G2)
-#         _, elapsed_time = matcher.is_match()
-#         match_size = len(matcher.largest_match)
-#         benchmark_results.append((len(G1), len(G2), match_size, f"{elapsed_time:0.4f}"))
-#
-#
-#     # Output results to CSV
-#     with open(output_csv, mode='w', newline='') as csv_file:
-#         writer = csv.writer(csv_file)
-#         writer.writerows(benchmark_results)
-#
-#     # Output results to a LaTeX table format
-#     with open(output_latex, mode='w') as latex_file:
-#         latex_file.write("\\begin{tabular}{cccc}\n")
-#         latex_file.write("\\hline\n")
-#         latex_file.write("Molecule 1 Size & Molecule 2 Size & Match Size & Execution Time (s) \\\\\n")
-#         latex_file.write("\\hline\n")
-#         for row in benchmark_results[1:]:  # Skip the header
-#             latex_file.write(f"{row[0]} & {row[1]} & {row[2]} & {row[3]} \\\\\n")
-#         latex_file.write("\\hline\n")
-#         latex_file.write("\\end{tabular}")
-
-# def benchmark_molecules(molecule_pairs, output_csv="benchmark_results.csv", output_latex="benchmark_results.tex"):
-#     """
-#     Benchmark multiple pairs of molecule graphs and output the results to a CSV file and a LaTeX table.
-#     Formats molecule names with their sizes in parentheses.
-#     :param molecule_pairs: List of tuples (G1, name1, G2, name2) representing pairs of molecule graphs to compare and their strings of names.
-#     :param output_csv: Filename for the CSV output.
-#     :param output_latex: Filename for the LaTeX output.
-#     :return: None
-#     """
-#     benchmark_results = [("Molecule 1 (Size)", "Molecule 2 (Size)", "Match Size", "Execution Time (s)")]
-#
-#     for (mol1, G1, name1, mol2, G2, name2) in molecule_pairs:
-#         matcher = VF2Matcher(G1, G2)
-#         _, elapsed_time = matcher.is_match()
-#         match_size = len(matcher.largest_match)
-#         molecule_1_info = f"{name1} ({len(G1)})"
-#         molecule_2_info = f"{name2} ({len(G2)})"
-#         benchmark_results.append((molecule_1_info, molecule_2_info, match_size, f"{elapsed_time:0.4f}"))
-#
-#     # Output results to CSV
-#     with open(output_csv, mode='w', newline='') as csv_file:
-#         writer = csv.writer(csv_file)
-#         writer.writerows(benchmark_results)
-#
-#     # Output results to a LaTeX table format
-#     with open(output_latex, mode='w') as latex_file:
-#         latex_file.write("\\begin{tabular}{cccc}\n")
-#         latex_file.write("\\hline\n")
-#         latex_file.write("Molecule 1 (Size) & Molecule 2 (Size) & Match Size & Execution Time (s) \\\\\n")
-#         latex_file.write("\\hline\n")
-#         for row in benchmark_results[1:]:  # Skip the header
-#             latex_file.write(f"{row[0]} & {row[1]} & {row[2]} & {row[3]} \\\\\n")
-#         latex_file.write("\\hline\n")
-#         latex_file.write("\\end{tabular}")
-
 def drawCommonSubgraphOnLargerMolecule(matcher, mol1, mol2, molecule_name_prefix):
     # Determine the larger molecule based on the number of atoms
     if len(mol1.GetAtoms()) >= len(mol2.GetAtoms()):
@@ -281,32 +203,12 @@ def drawCommonMolecule(matcher, molecule, molecule_name):
     # Choose one of the two molecules for the overlay
     Draw.MolToFile(molecule, f'{molecule_name}.png', highlightAtoms=matched_atoms, size=(300, 300))
 
-
-
-# def check_chirality(self, n, m):
-#     # Assuming 'chirality' is a property stored in the node attributes
-#     chirality_n = self.G1.nodes[n].get('chirality')
-#     chirality_m = self.G2.nodes[m].get('chirality')
-#     return chirality_n == chirality_m or not chirality_n or not chirality_m
-#
-# def check_bond_stereochemistry(self, n, m):
-#     # This requires checking the spatial arrangement around double bonds
-#     # This example assumes you have a way to determine the configuration (e.g., 'cis' or 'trans') of a bond
-#     for neighbor in self.G1[n]:
-#         if any(self.G1[n][neighbor]['stereo'] != self.G2[m][m_neighbor]['stereo']
-#                for m_neighbor in self.G2[m] if self.core_1.get(neighbor) == m_neighbor):
-#             return False
-#     return True
-#
-# def check_isotope(self, n, m):
-#     isotope_n = self.G1.nodes[n].get('isotope')
-#     isotope_m = self.G2.nodes[m].get('isotope')
-#     return isotope_n == isotope_m or not isotope_n or not isotope_m
 def read_molecules_from_smiles(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
     molecules = [Chem.MolFromSmiles(line.split()[0]) for line in lines]
     return molecules
+
 
 
 
